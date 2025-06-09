@@ -50,4 +50,6 @@ app.get("/new-user-dashboard", async (req, res) => {
 // Server Startup
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Access the application at: http://localhost:${PORT}/`);
+  console.log(``);
 });
