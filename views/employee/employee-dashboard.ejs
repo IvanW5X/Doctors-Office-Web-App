@@ -69,9 +69,13 @@
             <th class="header-element">Specialization</th>
             <th class="header-element">Offices</th>
             <th class="header-element">Appointments</th>
+            <th class="header-element">Add Workplace</th>
             <th class="header-element">Delete</th>
           </tr>
-          <% doctors.forEach(doc => { %>
+          <% doctors.forEach(doc => { 
+            // Get a Set of office names this doctor already works at
+            const doctorWorkplaces = (doc.workplaces || []).map(w => w.office_name);
+          %>
           <tr class="data-row">
             <td class="data-element"><%= doc.fname %> <%= doc.lname %></td>
             <td class="data-element"><%= doc.specialization %></td>
@@ -84,6 +88,27 @@
               <button type="button" class="viewDoctorAppointmentsBtn" doctorId="<%= doc.employee_id %>">
                 View Appointments
               </button>
+            </td>
+            <td>
+              <button type="button" class="addDoctorWorkplaceBtn viewDoctorAppointmentsBtn" data-doctor-id="<%= doc.employee_id %>" data-doctor-name="<%= doc.fname %> <%= doc.lname %>">
+                Add Workplace
+              </button>
+              <!-- Modal for this doctor -->
+              <div id="addDoctorWorkplaceModal-<%= doc.employee_id %>" class="addDoctorWorkplaceModal" style="display:none; position:fixed; top:20%; left:35%; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
+                <form method="POST" action="/employee/add-doctor-workplace">
+                  <input type="hidden" name="doctor_id" value="<%= doc.employee_id %>">
+                  <label class="label" for="office_name_<%= doc.employee_id %>">Select Office for <%= doc.fname %> <%= doc.lname %>:</label>
+                  <select class="input" name="office_name" id="office_name_<%= doc.employee_id %>" required>
+                    <% offices.forEach(office => { 
+                      if (!doctorWorkplaces.includes(office.office_name)) { %>
+                        <option value="<%= office.office_name %>"><%= office.office_name %> - <%= office.location %></option>
+                    <% } }) %>
+                  </select>
+                  <br><br>
+                  <button class="btn" type="submit">Add Workplace</button>
+                  <button class="btn" type="button" onclick="document.getElementById('addDoctorWorkplaceModal-<%= doc.employee_id %>').style.display='none'">Cancel</button>
+                </form>
+              </div>
             </td>
             <td class="centered">
               <button type="button" class="delete-doctor-btn icon-btn" data-doctor-id="<%= doc.employee_id %>">
@@ -142,6 +167,21 @@
     </div>
     <p></p>
     <button class="btn" type="button" onclick="window.location.href='/'">Log Out</button>
+    <!-- Add Doctor Workplace Modal -->
+    <div id="addDoctorWorkplaceModal" style="display:none; position:fixed; top:20%; left:35%; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
+      <form id="addDoctorWorkplaceForm" method="POST" action="/employee/add-doctor-workplace">
+        <input type="hidden" name="doctor_id" id="modal_doctor_id">
+        <label class="label" for="office_name">Select Office for <span id="modal_doctor_name"></span>:</label>
+        <select class="input" name="office_name" id="office_name" required>
+          <% offices.forEach(office => { %>
+            <option value="<%= office.office_name %>"><%= office.office_name %> - <%= office.location %></option>
+          <% }) %>
+        </select>
+        <br><br>
+        <button class="btn" type="submit">Add Workplace</button>
+        <button class="btn" type="button" onclick="document.getElementById('addDoctorWorkplaceModal').style.display='none'">Cancel</button>
+      </form>
+    </div>
     <script>
       document.querySelector('.addDoctorBbtn').addEventListener('click', function() {
         // Pass employee_fname and employee_ssn if available in the page context
@@ -150,6 +190,13 @@
           employee_ssn: "<%= ssn %>"
         });
         window.location.href = '/employee/add-doctor-form?' + params.toString();
+      });
+      document.querySelectorAll('.addDoctorWorkplaceBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const doctorId = this.getAttribute('data-doctor-id');
+          document.querySelectorAll('.addDoctorWorkplaceModal').forEach(modal => { modal.style.display = 'none'; });
+          document.getElementById('addDoctorWorkplaceModal-' + doctorId).style.display = 'block';
+        });
       });
     </script>
   </body>

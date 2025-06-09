@@ -7,7 +7,7 @@ const db = require("../db/connection");
 
 // Import db queries
 const getOfficeData = require("../services/office-data");
-const { getDoctorData, addDoctor } = require("../services/doctor-data");
+const { getDoctorData, addDoctor, getDoctorWorkplaces } = require("../services/doctor-data");
 
 const {
   getAppointmentsForPatient,
@@ -36,14 +36,19 @@ router.get("/dashboard/:fname/:ssn", async (req, res) => {
   const { fname, ssn } = req.params;
 
   const offices = await getOfficeData();
-  const doctors = await getDoctorData();
+  let doctors = await getDoctorData();
   const patients = await getAllPatientData();
   const employees = await getAllEmployeeData();
+
+  // For each doctor, attach workplaces array
+  for (const doc of doctors) {
+    doc.workplaces = await getDoctorWorkplaces(doc.employee_id);
+  }
 
   res.render("employee/employee-dashboard", {
     fname,
     ssn,
-    employee_id: ssn, // <-- Add this line
+    employee_id: ssn,
     offices,
     employees,
     doctors,
@@ -362,5 +367,29 @@ router.delete("/employee/:employeeId", async (req, res) => {
   }
 });
 
+// Add workplace for a doctor
+router.post("/add-doctor-workplace", async (req, res) => {
+  try {
+    const { doctor_id, office_name } = req.body;
+    // Insert into DoctorWorkplace using office_name directly
+    try {
+      await db.promise().query(
+        "INSERT INTO DoctorWorkplace (employee_id, office_name) VALUES (?, ?)",
+        [doctor_id, office_name]
+      );
+      res.redirect(req.get("Referrer") || "/");
+    } catch (insertErr) {
+      if (insertErr.code === 'ER_DUP_ENTRY') {
+        res.status(400).send("This doctor already works at the selected office.");
+      } else {
+        console.error(insertErr);
+        res.status(500).send("Database error: " + insertErr.message);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to add workplace for doctor.");
+  }
+});
 
 module.exports = router;
