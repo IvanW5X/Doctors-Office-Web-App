@@ -1,4 +1,6 @@
 // Authors: Sean Clayton, Ivan Wong, Alex Loomis
+// File for handling login routes
+
 const express = require('express');
 const router = express.Router();
 

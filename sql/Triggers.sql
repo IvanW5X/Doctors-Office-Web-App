@@ -32,6 +32,7 @@ BEGIN
             FROM Appointment a
             WHERE (a.employee_id = NEW.employee_id OR a.patient_id = NEW.patient_id)
               AND a.date = NEW.date
+              -- check that appointment times do not overlap for the same patient or same doctor
               AND (
                     (NEW.start_time < a.end_time AND NEW.start_time >= a.start_time) OR
                     (NEW.end_time > a.start_time AND NEW.end_time <= a.end_time) OR
@@ -56,6 +57,7 @@ BEGIN
         GROUP BY patient_id
         HAVING SUM(amount_due) > 0
     ) THEN
+        -- do not allow patient's with outstanding balances to be deleted
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Patient has an outstanding balance remaining.';
     END IF;

@@ -1,4 +1,6 @@
 // Authors: Sean Clayton, Ivan Wong, Alex Loomis
+// File for authenticating log in data
+
 const db = require("../db/connection");
 
 async function loginHandler(req, res) {

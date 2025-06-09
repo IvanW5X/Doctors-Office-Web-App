@@ -1,4 +1,6 @@
 // Authors: Sean Clayton, Ivan Wong, Alex Loomis
+// File for fetching office data from the db
+
 const db = require("../db/connection");
 
 async function getOfficeData() {

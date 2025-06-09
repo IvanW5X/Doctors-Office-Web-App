@@ -1,4 +1,6 @@
 // Authors: Sean Clayton, Ivan Wong, Alex Loomis
+// File for getting info from DOCTOR table
+
 const db = require("../db/connection");
 
 async function getDoctorData() {
